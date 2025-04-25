@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Upload to S3</title>
+</head>
+<body>
+    <h1>Upload an Image</h1>
+    <input type="file" id="fileInput" accept="image/*">
+    <br><br>
+    <img id="preview" src="#" alt="Image Preview" style="display:none; max-width: 300px;">
+    <br><br>
+    <button id="uploadButton">Upload</button>
+    <p id="confirmationMessage" style="display:none; color: green;">Image uploaded successfully!</p>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const preview = document.getElementById('preview');
+        const uploadButton = document.getElementById('uploadButton');
+        const confirmationMessage = document.getElementById('confirmationMessage');
+
+        fileInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    confirmationMessage.style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                preview.style.display = 'none';
+                confirmationMessage.style.display = 'none';
+            }
+        });
+
+        uploadButton.addEventListener('click', async () => {
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('Please select a file first.');
+                return;
+            }
+
+            // Replace with your pre-signed URL
+            const presignedUrl = 's3://my-static-s3-website-us-east-1a-id001/';
+
+            try {
+                const response = await fetch(presignedUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': file.type
+                    },
+                    body: file
+                });
+
+                if (response.ok) {
+                    alert('Upload successful!');
+                    confirmationMessage.style.display = 'block';
+                } else {
+                    alert('Upload failed.');
+                    confirmationMessage.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error uploading file:', error);
+                alert('An error occurred while uploading.');
+                confirmationMessage.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
